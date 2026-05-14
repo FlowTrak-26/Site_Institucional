@@ -42,7 +42,7 @@
                         <span id="tituloGrafico-Calor">Mapa de Calor - Fluxo por local</span>
                     </h3>
                     <div class="graph">
-                        <canvas id="myChartCanvas${id_grafico}"></canvas>
+                        <canvas id="myChartCanvas-${id_grafico}"></canvas>
                     </div>
                     <div class="label-captura">
                         <p id="avisoCaptura${id_grafico}" style="color: white"></p>
@@ -106,21 +106,21 @@
 
     //     Se quiser alterar a busca, ajuste as regras de negócio em src/controllers
     //     Para ajustar o "select", ajuste o comando sql em src/models
-    function obterDadosGrafico(id) {
+    function obterDadosGrafico(id_grafico) {
 
-        alterarTitulo(id)
+        alterarTitulo(id_grafico)
 
         if (proximaAtualizacao != undefined) {
             clearTimeout(proximaAtualizacao);
         }
 
-        fetch(`/dash/ultimas/-${id_grafico}`, { cache: 'no-store' }).then(function (response) {
+        fetch(`/dash/ultimas/grafico-${id_grafico}`, { cache: 'no-store' }).then(function (response) {
             if (response.ok) {
                 response.json().then(function (resposta) {
                     console.log(`Dados recebidos: ${JSON.stringify(resposta)}`);
                     resposta.reverse();
 
-                    plotarGrafico(resposta, id);
+                    plotarGrafico(resposta, id_grafico);
 
                 });
             } else {
@@ -135,7 +135,7 @@
     // Esta função *plotarGrafico* usa os dados capturados na função anterior para criar o gráfico
     // Configura o gráfico (cores, tipo, etc), materializa-o na página e, 
     // A função *plotarGrafico* também invoca a função *atualizarGrafico*
-    function plotarGrafico(resposta, id) {
+    function plotarGrafico(resposta, id_grafico) {
 
         console.log('iniciando plotagem do gráfico...');
 
@@ -151,13 +151,6 @@
                 fill: false,
                 borderColor: 'rgb(75, 192, 192)',
                 tension: 0.1
-            },
-            {
-                label: 'Temperatura',
-                data: [],
-                fill: false,
-                borderColor: 'rgb(199, 52, 52)',
-                tension: 0.1
             }]
         };
 
@@ -170,7 +163,6 @@
             var registro = resposta[i];
             labels.push(registro.momento_grafico);
             dados.datasets[0].data.push(registro.umidade);
-            dados.datasets[1].data.push(registro.temperatura);
         }
 
         console.log('----------------------------------------------')
@@ -189,11 +181,11 @@
 
         // Adicionando gráfico criado em div na tela
         let myChart = new Chart(
-            document.getElementById(`myChartCanvas${id}`),
+            document.getElementById(`myChartCanvas-${id_grafico}`),
             config
         );
 
-        setTimeout(() => atualizarGrafico(id, dados, myChart), 2000);
+        setTimeout(() => atualizarGrafico(id_, dados, myChart), 2000);
     }
 
 
@@ -202,15 +194,15 @@
 
     //     Se quiser alterar a busca, ajuste as regras de negócio em src/controllers
     //     Para ajustar o "select", ajuste o comando sql em src/models
-    function atualizarGrafico(id, dados, myChart) {
+    function atualizarGrafico(id_grafico, dados, myChart) {
 
 
 
-        fetch(`/dash/tempo-real/${id}`, { cache: 'no-store' }).then(function (response) {
+        fetch(`/dash/tempo-real/grafico-${id_grafico}`, { cache: 'no-store' }).then(function (response) {
             if (response.ok) {
                 response.json().then(function (novoRegistro) {
 
-                    obterdados(id);
+                    obterdados(id_grafico);
                     // alertar(novoRegistro, id);
                     console.log(`Dados recebidos: ${JSON.stringify(novoRegistro)}`);
                     console.log(`Dados atuais do gráfico:`);
@@ -237,19 +229,16 @@
                         dados.datasets[0].data.shift();  // apagar o primeiro de umidade
                         dados.datasets[0].data.push(novoRegistro[0].umidade); // incluir uma nova medida de umidade
 
-                        dados.datasets[1].data.shift();  // apagar o primeiro de temperatura
-                        dados.datasets[1].data.push(novoRegistro[0].temperatura); // incluir uma nova medida de temperatura
-
                         myChart.update();
                     }
 
                     // Altere aqui o valor em ms se quiser que o gráfico atualize mais rápido ou mais devagar
-                    proximaAtualizacao = setTimeout(() => atualizarGrafico(id, dados, myChart), 2000);
+                    proximaAtualizacao = setTimeout(() => atualizarGrafico(id_grafico, dados, myChart), 2000);
                 });
             } else {
                 console.error('Nenhum dado encontrado ou erro na API');
                 // Altere aqui o valor em ms se quiser que o gráfico atualize mais rápido ou mais devagar
-                proximaAtualizacao = setTimeout(() => atualizarGrafico(id, dados, myChart), 2000);
+                proximaAtualizacao = setTimeout(() => atualizarGrafico(id_grafico, dados, myChart), 2000);
             }
         })
             .catch(function (error) {

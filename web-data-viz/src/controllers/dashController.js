@@ -1,6 +1,6 @@
 var dashModel = require("../models/dashModel");
 
-function buscarUltimasMedidas(req, res) {
+function buscarDadosGraficoLinha(req, res) {
 
     const limite_linhas = 7;
 
@@ -8,7 +8,27 @@ function buscarUltimasMedidas(req, res) {
 
     console.log(`Recuperando as ultimas ${limite_linhas} medidas`);
 
-    dashModel.buscarUltimasMedidas(id_grafico, limite_linhas).then(function (resultado) {
+    dashModel.buscarDadosGraficoLinha(id_grafico, limite_linhas).then(function (resultado) {
+        if (resultado.length > 0) {
+            res.status(200).json(resultado);
+        } else {
+            res.status(204).send("Nenhum resultado encontrado!")
+        }
+    }).catch(function (erro) {
+        console.log(erro);
+        console.log("Houve um erro ao buscar os ultimos dados recebidos.", erro.sqlMessage);
+        res.status(500).json(erro.sqlMessage);
+    });
+}
+
+
+function atualizarDadosGraficoLinha(req, res) {
+
+    var id_grafico = req.params.id_grafico;
+
+    console.log(`Recuperando medidas em tempo real`);
+
+    dashModel.atualizarDadosGraficoLinha(id_grafico).then(function (resultado) {
         if (resultado.length > 0) {
             res.status(200).json(resultado);
         } else {
@@ -22,13 +42,35 @@ function buscarUltimasMedidas(req, res) {
 }
 
 
-function buscarMedidasEmTempoReal(req, res) {
+
+function buscarDadosMapaCalor(req, res) {
+
+    const limite_linhas = 7;
+
+    var id_grafico = req.params.id_grafico;
+
+    console.log(`Recuperando as ultimas ${limite_linhas} medidas`);
+
+    dashModel.buscarDadosMapaCalor(id_grafico, limite_linhas).then(function (resultado) {
+        if (resultado.length > 0) {
+            res.status(200).json(resultado);
+        } else {
+            res.status(204).send("Nenhum resultado encontrado!")
+        }
+    }).catch(function (erro) {
+        console.log(erro);
+        console.log("Houve um erro ao buscar as ultimas medidas.", erro.sqlMessage);
+        res.status(500).json(erro.sqlMessage);
+    });
+}
+
+function atualizarDadosMapaCalor(req, res) {
 
     var id_grafico = req.params.id_grafico;
 
     console.log(`Recuperando medidas em tempo real`);
 
-    dashModel.buscarMedidasEmTempoReal(id_grafico).then(function (resultado) {
+    dashModel.atualizarDadosMapaCalor(id_grafico).then(function (resultado) {
         if (resultado.length > 0) {
             res.status(200).json(resultado);
         } else {
@@ -42,7 +84,7 @@ function buscarMedidasEmTempoReal(req, res) {
 }
 
 module.exports = {
-    buscarUltimasMedidas,
+    buscarDadosGraficoLinha,
     buscarMedidasEmTempoReal
 
 }
